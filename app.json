@@ -1,0 +1,15 @@
+{
+    "id": "750a82a1-7a56-403b-bf8a-77bcff1f72ad",
+    "version": "0.0.1",
+    "requiredApiVersion": "^1.4.0",
+    "iconFile": "icon.png",
+    "author": {
+        "name": "Guilherme Gazzo",
+        "homepage": "https://github.com/ggazzo",
+        "support": "https://github.com/ggazzo"
+    },
+    "name": "Coronga",
+    "nameSlug": "coronga",
+    "classFile": "CorongaApp.ts",
+    "description": "Coronga"
+}
