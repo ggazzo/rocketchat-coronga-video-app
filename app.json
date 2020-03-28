@@ -8,8 +8,8 @@
         "homepage": "https://github.com/ggazzo",
         "support": "https://github.com/ggazzo"
     },
-    "name": "Coronga",
-    "nameSlug": "coronga",
+    "name": "Video Conference",
+    "nameSlug": "video-conference",
     "classFile": "CorongaApp.ts",
-    "description": "Coronga"
+    "description": "Create links for video conference"
 }
