@@ -8,16 +8,26 @@ export const CreateVideo = {
     i18nDescription: 'generate link for video conference',
     providesPreview: false,
     async executor(context: SlashCommandContext, read: IRead, modify: IModify, http: IHttp, persis: IPersistence): Promise<void> {
-        try {
+        try {       
 
+            const siteurl = await read.getEnvironmentReader().getServerSettings().getValueById('Site_Url');
+    
             const [text = ''] = context.getArguments();
 
             const room = context.getRoom();
 
+            const departmentName  = (<any>room).department.name
+
             const messageDefault = await read.getEnvironmentReader().getSettings().getValueById('DEFAULT_MESSAGE');
 
-            const url = 'https://video.telemedicine.rocket.chat';//await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_server');
-            const secret = 'OdrexHOAW4imRCMoEGqVHUTkRaCwXmi6X47ZDnZmLA';//await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_sharedSecret');
+            // const url = 'https://video.telemedicine.rocket.chat';
+            const url = await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_server');
+            // const secret = 'OdrexHOAW4imRCMoEGqVHUTkRaCwXmi6X47ZDnZmLA';
+            const secret = await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_sharedSecret');
+
+            const callbackUrl = await read.getEnvironmentReader().getSettings().getValueById('callback_url');
+
+            const callbackToken = await read.getEnvironmentReader().getSettings().getValueById('callback_token');
 
             const meetingID = await read.getEnvironmentReader().getSettings().getValueById('uniqueID') + room.id;
 
@@ -34,6 +44,12 @@ export const CreateVideo = {
                 meta_html5autoswaplayout: true,
                 meta_html5autosharewebcam: false,
                 meta_html5hidepresentation: true,
+                record: true,
+                callback_url: callbackUrl,
+                callback_token: callbackToken,
+                room_id: room.id,
+                env_url: siteurl,
+                department_name: departmentName
             });
 
             const { content = '' } = await http.get(createUrl);

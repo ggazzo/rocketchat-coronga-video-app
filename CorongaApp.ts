@@ -39,7 +39,7 @@ export class CorongaApp extends App {
             packageValue: '',
             required: true,
             public: false,
-            i18nLabel: 'Default Message',
+            i18nLabel: 'Video Conference Base URL',
         })
 
         configuration.settings.provideSetting({
@@ -48,7 +48,7 @@ export class CorongaApp extends App {
             packageValue: '',
             required: true,
             public: false,
-            i18nLabel: 'Default Message',
+            i18nLabel: 'API Secret',
         })
 
         configuration.settings.provideSetting({
@@ -57,7 +57,25 @@ export class CorongaApp extends App {
             packageValue: '',
             required: true,
             public: false,
-            i18nLabel: 'Default Message',
+            i18nLabel: 'Unique ID',
+        })
+
+        configuration.settings.provideSetting({
+            id: 'callback_url',
+            type: SettingType.STRING,
+            packageValue: '',
+            required: true,
+            public: false,
+            i18nLabel: 'Callback URL',
+        })
+
+        configuration.settings.provideSetting({
+            id: 'callback_token',
+            type: SettingType.STRING,
+            packageValue: '',
+            required: true,
+            public: false,
+            i18nLabel: 'Callback Token',
         })
 
 
@@ -67,3 +85,5 @@ export class CorongaApp extends App {
 
     }
 }
+
+
