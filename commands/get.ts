@@ -1,7 +1,8 @@
-import { SlashCommandContext } from "@rocket.chat/apps-engine/definition/slashcommands";
-import { IRead, IModify, IHttp, IPersistence } from "@rocket.chat/apps-engine/definition/accessors";
+import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/definition/accessors';
+import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 
 import BigBlueButtonApi from '../lib/bbbApi';
+
 export const GetVideo = {
     command: 'getvideo',
     i18nParamsExample: 'insert your text here',
@@ -16,12 +17,12 @@ export const GetVideo = {
 
             const messageDefault = await read.getEnvironmentReader().getSettings().getValueById('DEFAULT_MESSAGE');
 
-            const url = 'https://video.telemedicine.rocket.chat';//await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_server');
-            const secret = 'OdrexHOAW4imRCMoEGqVHUTkRaCwXmi6X47ZDnZmLA';//await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_sharedSecret');
+            const url = 'https://video.telemedicine.rocket.chat'; // await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_server');
+            const secret = 'OdrexHOAW4imRCMoEGqVHUTkRaCwXmi6X47ZDnZmLA'; // await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_sharedSecret');
 
             const meetingID = await read.getEnvironmentReader().getSettings().getValueById('uniqueID') + room.id;
 
-            const api = new BigBlueButtonApi(`${ url }/bigbluebutton/api`, secret);
+            const api = new BigBlueButtonApi(`${url}/bigbluebutton/api`, secret);
 
             const createUrl = api.urlFor('create', {
                 name: room.type === 'd' ? 'Direct' : room.displayName,
@@ -39,7 +40,7 @@ export const GetVideo = {
             const { content = '' } = await http.get(createUrl);
             const returnCode = content.match(/<returncode>(.*)<\/returncode>/);
 
-            if(!returnCode) {
+            if (!returnCode) {
                 return;
             }
 
@@ -50,27 +51,24 @@ export const GetVideo = {
             // console.log(hookApi);
             // console.log(await http.get(hookApi));
 
-
-
             const guestUrl = api.urlFor('join', {
                 password: 'mp', // mp if moderator ap if attendee
                 meetingID,
-                fullName: "Visitante",
+                fullName: 'Visitante',
                 userID: 'xxxx',
                 joinViaHtml5: true,
                 // avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
                 // clientURL: `${ url }/html5client/join`,
-            })
+            });
 
             const preMessage = text.trim() ? text : messageDefault;
-
 
             const attendantMessage = modify.getCreator().startMessage();
 
             const attendantUrl = api.urlFor('join', {
                 password: 'mp', // mp if moderator ap if attendee
                 meetingID,
-                fullName: "Atendente",
+                fullName: 'Atendente',
                 userID: 'xxxxx',
                 joinViaHtml5: true,
                 // avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
@@ -86,27 +84,26 @@ export const GetVideo = {
             console.log(error);
         }
 
+        // // const hookResult = HTTP.get(hookApi);
 
-    // // const hookResult = HTTP.get(hookApi);
+        // // if (hookResult.statusCode !== 200) {
+        // // 	// TODO improve error logging
+        // // 	console.log({ hookResult });
+        // // 	return;
+        // // }
 
-    // // if (hookResult.statusCode !== 200) {
-    // // 	// TODO improve error logging
-    // // 	console.log({ hookResult });
-    // // 	return;
-    // // }
-
-    //     return {
-    //         url: api.urlFor('join', {
-    //             password: 'mp', // mp if moderator ap if attendee
-    //             meetingID,
-    //             fullName: user.username,
-    //             userID: user._id,
-    //             joinViaHtml5: true,
-    //             avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
-    //             // clientURL: `${ url }/html5client/join`,
-    //         }),
-    //     };
-    //     }
+        //     return {
+        //         url: api.urlFor('join', {
+        //             password: 'mp', // mp if moderator ap if attendee
+        //             meetingID,
+        //             fullName: user.username,
+        //             userID: user._id,
+        //             joinViaHtml5: true,
+        //             avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
+        //             // clientURL: `${ url }/html5client/join`,
+        //         }),
+        //     };
+        //     }
 
         // const preMessage = text.trim() ? text : messageDefault;
 
@@ -118,5 +115,5 @@ export const GetVideo = {
 
         // modify.getCreator().finish(message);
 
-    }
-}
+    },
+};

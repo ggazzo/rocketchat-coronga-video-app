@@ -1,20 +1,12 @@
-import {
-    IAppAccessors,
-    ILogger,
-    IConfigurationExtend,
-    IModify,
-    IHttp,
-    IPersistence,
-    IRead,
-} from '@rocket.chat/apps-engine/definition/accessors';
+import { IAppAccessors, IConfigurationExtend, ILogger } from '@rocket.chat/apps-engine/definition/accessors';
 import { App } from '@rocket.chat/apps-engine/definition/App';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
-import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 import { SettingType } from '@rocket.chat/apps-engine/definition/settings';
 
-import { CreateVideo } from './commands/create'
-import { GetVideo } from './commands/get';
+import { CreateVideo } from './commands/create';
 import { EndVideo } from './commands/end';
+import { GetVideo } from './commands/get';
+
 export class CorongaApp extends App {
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
         super(info, logger, accessors);
@@ -31,7 +23,7 @@ export class CorongaApp extends App {
             required: true,
             public: false,
             i18nLabel: 'Default Message',
-        })
+        });
 
         configuration.settings.provideSetting({
             id: 'bigbluebutton_server',
@@ -40,7 +32,7 @@ export class CorongaApp extends App {
             required: true,
             public: false,
             i18nLabel: 'Default Message',
-        })
+        });
 
         configuration.settings.provideSetting({
             id: 'bigbluebutton_sharedSecret',
@@ -49,7 +41,7 @@ export class CorongaApp extends App {
             required: true,
             public: false,
             i18nLabel: 'Default Message',
-        })
+        });
 
         configuration.settings.provideSetting({
             id: 'uniqueID',
@@ -58,8 +50,7 @@ export class CorongaApp extends App {
             required: true,
             public: false,
             i18nLabel: 'Default Message',
-        })
-
+        });
 
         configuration.slashCommands.provideSlashCommand(CreateVideo);
         configuration.slashCommands.provideSlashCommand(EndVideo);

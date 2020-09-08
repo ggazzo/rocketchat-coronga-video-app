@@ -1,7 +1,8 @@
-import { SlashCommandContext } from "@rocket.chat/apps-engine/definition/slashcommands";
-import { IRead, IModify, IHttp, IPersistence } from "@rocket.chat/apps-engine/definition/accessors";
+import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/definition/accessors';
+import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 
 import BigBlueButtonApi from '../lib/bbbApi';
+
 export const EndVideo = {
     command: 'endvideo',
     i18nParamsExample: 'insert your text here',
@@ -38,7 +39,7 @@ export const EndVideo = {
             const { content = '' } = await http.get(createUrl);
             const returnCode = content.match(/<returncode>(.*)<\/returncode>/);
 
-            if(!returnCode) {
+            if (!returnCode) {
                 return;
             }
 
@@ -49,23 +50,19 @@ export const EndVideo = {
             // console.log(hookApi);
             // console.log(await http.get(hookApi));
 
-
-
             const guestUrl = api.urlFor('join', {
                 password: 'mp', // mp if moderator ap if attendee
                 meetingID,
-                fullName: "Visitante",
+                fullName: 'Visitante',
                 userID: 'xxxx',
                 joinViaHtml5: true,
                 // avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
                 // clientURL: `${ url }/html5client/join`,
-            })
+            });
 
             const preMessage = text.trim() ? text : messageDefault;
 
-
             const attendantMessage = modify.getCreator().startMessage();
-
 
             const endApi = api.urlFor('end', {
                 meetingID,
@@ -87,7 +84,7 @@ export const EndVideo = {
             const attendantUrl = api.urlFor('join', {
                 password: 'mp', // mp if moderator ap if attendee
                 meetingID,
-                fullName: "Atendente",
+                fullName: 'Atendente',
                 userID: 'xxxxx',
                 joinViaHtml5: true,
                 // avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
@@ -102,7 +99,6 @@ export const EndVideo = {
         } catch (error) {
             console.log(error);
         }
-
 
     // // const hookResult = HTTP.get(hookApi);
 
@@ -135,5 +131,5 @@ export const EndVideo = {
 
         // modify.getCreator().finish(message);
 
-    }
-}
+    },
+};
