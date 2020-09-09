@@ -1,38 +1,27 @@
 import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/definition/accessors';
-import { RoomType } from '@rocket.chat/apps-engine/definition/rooms';
 import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 
 import BigBlueButtonApi from '../lib/bbbApi';
 
-export const CreateVideo = {
-    command: 'video',
+export const EndVideo = {
+    command: 'endvideo',
     i18nParamsExample: 'insert your text here',
     i18nDescription: 'generate link for video conference',
     providesPreview: false,
     async executor(context: SlashCommandContext, read: IRead, modify: IModify, http: IHttp, persis: IPersistence): Promise<void> {
         try {
-            let departmentName;
 
             const [text = ''] = context.getArguments();
-            const room = context.getRoom();
-            const sender = context.getSender();
 
-            const siteurl = await read.getEnvironmentReader().getServerSettings().getValueById('Site_Url');
+            const room = context.getRoom();
+
             const messageDefault = await read.getEnvironmentReader().getSettings().getValueById('DEFAULT_MESSAGE');
-            const bbbUrl = await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_server');
+
+            const url = await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_server');
             const secret = await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_sharedSecret');
-            const callbackUrl = await read.getEnvironmentReader().getSettings().getValueById('callback_url');
-            const appVersion = await read.getEnvironmentReader().getSettings().getById('app_version');
             const meetingID = await read.getEnvironmentReader().getSettings().getValueById('uniqueID') + room.id;
 
-            const api = new BigBlueButtonApi(`${ bbbUrl }/bigbluebutton/api`, secret);
-
-            const res = await http.get(`${siteurl}/api/info`);
-            const rocketVersion = res.data.version;
-
-            if (room.type === RoomType.LIVE_CHAT) {
-                departmentName  = room['department'].name;
-            }
+            const api = new BigBlueButtonApi(`${url}/bigbluebutton/api`, secret);
 
             const createUrl = api.urlFor('create', {
                 name: room.type === 'd' ? 'Direct' : room.displayName,
@@ -45,15 +34,6 @@ export const CreateVideo = {
                 meta_html5autoswaplayout: true,
                 meta_html5autosharewebcam: false,
                 meta_html5hidepresentation: true,
-                meta_endCallbackUrl: encodeURI(callbackUrl),
-                meta_bbb_roomId: room.id,
-                meta_bbb_roomType: room.type,
-                meta_bbb_originTag: appVersion.packageValue,
-                meta_bbb_originVersion: rocketVersion,
-                meta_bbb_originDomain: siteurl,
-                meta_bbb_originName: 'Rocket.Chat',
-                meta_bbb_attendeeId: sender.id,
-                ...(room.type === RoomType.LIVE_CHAT) && {meta_bbb_departmentName: departmentName},
             });
 
             const { content = '' } = await http.get(createUrl);
@@ -62,7 +42,6 @@ export const CreateVideo = {
             if (!returnCode) {
                 return;
             }
-
             const guestUrl = api.urlFor('join', {
                 password: 'mp', // mp if moderator ap if attendee
                 meetingID,
@@ -73,15 +52,24 @@ export const CreateVideo = {
 
             const preMessage = text.trim() ? text : messageDefault;
 
-            const guestMessage = modify.getCreator().startMessage();
-
-            guestMessage.setSender(context.getSender());
-            guestMessage.setText(`${ preMessage && `${preMessage}: `}${guestUrl}`);
-            guestMessage.setRoom(room);
-
-            await modify.getCreator().finish(guestMessage);
-
             const attendantMessage = modify.getCreator().startMessage();
+
+            const endApi = api.urlFor('end', {
+                meetingID,
+                password: 'mp', // mp if moderator ap if attendee
+            });
+
+            const endApiResult = await http.get(endApi);
+
+            if (endApiResult.statusCode !== 200) {
+
+                attendantMessage.setSender(context.getSender());
+                attendantMessage.setText('Erro ao finalizar video');
+                attendantMessage.setRoom(room);
+
+                modify.getNotifier().notifyUser(context.getSender(), attendantMessage.getMessage());
+                return;
+            }
 
             const attendantUrl = api.urlFor('join', {
                 password: 'mp', // mp if moderator ap if attendee
@@ -89,13 +77,14 @@ export const CreateVideo = {
                 fullName: 'Atendente',
                 userID: 'xxxxx',
                 joinViaHtml5: true,
+                // avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
             });
 
             attendantMessage.setSender(context.getSender());
-            attendantMessage.setText(attendantUrl);
+            attendantMessage.setText('Video finalizado');
             attendantMessage.setRoom(room);
 
-            await modify.getNotifier().notifyUser(context.getSender(), attendantMessage.getMessage());
+            modify.getNotifier().notifyUser(context.getSender(), attendantMessage.getMessage());
 
         } catch (error) {
             console.log(error);
