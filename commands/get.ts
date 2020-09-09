@@ -44,21 +44,12 @@ export const GetVideo = {
                 return;
             }
 
-            // const hookApi = api.urlFor('hooks/create', {
-            //     meetingID,
-            //     callbackURL: `api/v1/videoconference.bbb.update/${ meetingID }`,
-            // });
-            // console.log(hookApi);
-            // console.log(await http.get(hookApi));
-
             const guestUrl = api.urlFor('join', {
                 password: 'mp', // mp if moderator ap if attendee
                 meetingID,
                 fullName: 'Visitante',
                 userID: 'xxxx',
                 joinViaHtml5: true,
-                // avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
-                // clientURL: `${ url }/html5client/join`,
             });
 
             const preMessage = text.trim() ? text : messageDefault;
@@ -71,7 +62,6 @@ export const GetVideo = {
                 fullName: 'Atendente',
                 userID: 'xxxxx',
                 joinViaHtml5: true,
-                // avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
             });
 
             attendantMessage.setSender(context.getSender());
@@ -83,37 +73,5 @@ export const GetVideo = {
         } catch (error) {
             console.log(error);
         }
-
-        // // const hookResult = HTTP.get(hookApi);
-
-        // // if (hookResult.statusCode !== 200) {
-        // // 	// TODO improve error logging
-        // // 	console.log({ hookResult });
-        // // 	return;
-        // // }
-
-        //     return {
-        //         url: api.urlFor('join', {
-        //             password: 'mp', // mp if moderator ap if attendee
-        //             meetingID,
-        //             fullName: user.username,
-        //             userID: user._id,
-        //             joinViaHtml5: true,
-        //             avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
-        //             // clientURL: `${ url }/html5client/join`,
-        //         }),
-        //     };
-        //     }
-
-        // const preMessage = text.trim() ? text : messageDefault;
-
-        // const message = modify.getCreator().startMessage();
-
-        // message.setSender(context.getSender());
-        // message.setText(`${ preMessage && `${preMessage}: `}https://meet.jit.si/telemedicine-${room.id}`);
-        // message.setRoom(room);
-
-        // modify.getCreator().finish(message);
-
     },
 };

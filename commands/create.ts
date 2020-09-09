@@ -1,4 +1,5 @@
 import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/definition/accessors';
+import { RoomType } from '@rocket.chat/apps-engine/definition/rooms';
 import { SlashCommandContext } from '@rocket.chat/apps-engine/definition/slashcommands';
 
 import BigBlueButtonApi from '../lib/bbbApi';
@@ -10,19 +11,28 @@ export const CreateVideo = {
     providesPreview: false,
     async executor(context: SlashCommandContext, read: IRead, modify: IModify, http: IHttp, persis: IPersistence): Promise<void> {
         try {
+            let departmentName;
 
             const [text = ''] = context.getArguments();
-
             const room = context.getRoom();
+            const sender = context.getSender();
 
+            const siteurl = await read.getEnvironmentReader().getServerSettings().getValueById('Site_Url');
             const messageDefault = await read.getEnvironmentReader().getSettings().getValueById('DEFAULT_MESSAGE');
-
-            const url = 'https://video.telemedicine.rocket.chat'; // await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_server');
-            const secret = 'OdrexHOAW4imRCMoEGqVHUTkRaCwXmi6X47ZDnZmLA'; // await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_sharedSecret');
-
+            const bbbUrl = await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_server');
+            const secret = await read.getEnvironmentReader().getSettings().getValueById('bigbluebutton_sharedSecret');
+            const callbackUrl = await read.getEnvironmentReader().getSettings().getValueById('callback_url');
+            const appVersion = await read.getEnvironmentReader().getSettings().getById('app_version');
             const meetingID = await read.getEnvironmentReader().getSettings().getValueById('uniqueID') + room.id;
 
-            const api = new BigBlueButtonApi(`${ url }/bigbluebutton/api`, secret);
+            const api = new BigBlueButtonApi(`${ bbbUrl }/bigbluebutton/api`, secret);
+
+            const res = await http.get(`${siteurl}/api/info`);
+            const rocketVersion = res.data.version;
+
+            if (room.type === RoomType.LIVE_CHAT) {
+                departmentName  = room['department'].name;
+            }
 
             const createUrl = api.urlFor('create', {
                 name: room.type === 'd' ? 'Direct' : room.displayName,
@@ -35,6 +45,15 @@ export const CreateVideo = {
                 meta_html5autoswaplayout: true,
                 meta_html5autosharewebcam: false,
                 meta_html5hidepresentation: true,
+                meta_endCallbackUrl: encodeURI(callbackUrl),
+                meta_bbb_roomId: room.id,
+                meta_bbb_roomType: room.type,
+                meta_bbb_originTag: appVersion.packageValue,
+                meta_bbb_originVersion: rocketVersion,
+                meta_bbb_originDomain: siteurl,
+                meta_bbb_originName: 'Rocket.Chat',
+                meta_bbb_attendeeId: sender.id,
+                ...(room.type === RoomType.LIVE_CHAT) && {meta_bbb_departmentName: departmentName},
             });
 
             const { content = '' } = await http.get(createUrl);
@@ -44,21 +63,12 @@ export const CreateVideo = {
                 return;
             }
 
-            // const hookApi = api.urlFor('hooks/create', {
-            //     meetingID,
-            //     callbackURL: `api/v1/videoconference.bbb.update/${ meetingID }`,
-            // });
-            // console.log(hookApi);
-            // console.log(await http.get(hookApi));
-
             const guestUrl = api.urlFor('join', {
                 password: 'mp', // mp if moderator ap if attendee
                 meetingID,
                 fullName: 'Visitante',
                 userID: 'xxxx',
                 joinViaHtml5: true,
-                // avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
-                // clientURL: `${ url }/html5client/join`,
             });
 
             const preMessage = text.trim() ? text : messageDefault;
@@ -69,7 +79,7 @@ export const CreateVideo = {
             guestMessage.setText(`${ preMessage && `${preMessage}: `}${guestUrl}`);
             guestMessage.setRoom(room);
 
-            modify.getCreator().finish(guestMessage);
+            await modify.getCreator().finish(guestMessage);
 
             const attendantMessage = modify.getCreator().startMessage();
 
@@ -79,49 +89,17 @@ export const CreateVideo = {
                 fullName: 'Atendente',
                 userID: 'xxxxx',
                 joinViaHtml5: true,
-                // avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
             });
 
             attendantMessage.setSender(context.getSender());
             attendantMessage.setText(attendantUrl);
             attendantMessage.setRoom(room);
 
-            modify.getNotifier().notifyUser(context.getSender(), attendantMessage.getMessage());
+            await modify.getNotifier().notifyUser(context.getSender(), attendantMessage.getMessage());
 
         } catch (error) {
             console.log(error);
         }
-
-    // // const hookResult = HTTP.get(hookApi);
-
-    // // if (hookResult.statusCode !== 200) {
-    // // 	// TODO improve error logging
-    // // 	console.log({ hookResult });
-    // // 	return;
-    // // }
-
-    //     return {
-    //         url: api.urlFor('join', {
-    //             password: 'mp', // mp if moderator ap if attendee
-    //             meetingID,
-    //             fullName: user.username,
-    //             userID: user._id,
-    //             joinViaHtml5: true,
-    //             avatarURL: Meteor.absoluteUrl(`avatar/${ user.username }`),
-    //             // clientURL: `${ url }/html5client/join`,
-    //         }),
-    //     };
-    //     }
-
-        // const preMessage = text.trim() ? text : messageDefault;
-
-        // const message = modify.getCreator().startMessage();
-
-        // message.setSender(context.getSender());
-        // message.setText(`${ preMessage && `${preMessage}: `}https://meet.jit.si/telemedicine-${room.id}`);
-        // message.setRoom(room);
-
-        // modify.getCreator().finish(message);
 
     },
 };
