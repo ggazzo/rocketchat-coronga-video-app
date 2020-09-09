@@ -72,8 +72,6 @@ export class CorongaApp extends App {
         });
 
         configuration.slashCommands.provideSlashCommand(CreateVideo);
-        configuration.slashCommands.provideSlashCommand(EndVideo);
-        configuration.slashCommands.provideSlashCommand(GetVideo);
 
     }
 
