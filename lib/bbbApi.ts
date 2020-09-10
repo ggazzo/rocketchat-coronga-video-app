@@ -92,6 +92,8 @@ export class BigBlueButtonApi {
 
         params = filter ? this.filterParams(params, method) : filterCustomParameters(params);
 
+        console.log('params: ', params);
+
         url = this.url;
         paramList = [];
         if (params != null) {
