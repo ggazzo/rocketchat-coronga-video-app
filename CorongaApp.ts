@@ -1,20 +1,34 @@
-import { IAppAccessors, IConfigurationExtend, ILogger } from '@rocket.chat/apps-engine/definition/accessors';
+import {
+    IAppAccessors,
+    IConfigurationExtend,
+    IEnvironmentRead,
+    ILogger,
+} from '@rocket.chat/apps-engine/definition/accessors';
+import { ApiSecurity, ApiVisibility, IApi } from '@rocket.chat/apps-engine/definition/api';
 import { App } from '@rocket.chat/apps-engine/definition/App';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
 import { SettingType } from '@rocket.chat/apps-engine/definition/settings';
 
-import { CreateVideo } from './commands/create';
-import { EndVideo } from './commands/end';
-import { GetVideo } from './commands/get';
+import { CreateVideo } from './src/commands/create';
+import { JoinEndpoint } from './src/endpoint/JoinEndpoint';
 
 export class CorongaApp extends App {
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
         super(info, logger, accessors);
     }
 
-    protected async extendConfiguration(configuration: IConfigurationExtend) {
+    public async initialize(configurationExtend: IConfigurationExtend, environmentRead: IEnvironmentRead): Promise<void> {
+        await this.extendConfiguration(configurationExtend);
+        await configurationExtend.api.provideApi({
+            visibility: ApiVisibility.PUBLIC,
+            security: ApiSecurity.UNSECURE,
+            endpoints: [
+                new JoinEndpoint(this),
+            ],
+        } as IApi);
+    }
 
-        const app = this;
+    protected async extendConfiguration(configuration: IConfigurationExtend) {
 
         configuration.settings.provideSetting({
             id: 'app_version',
@@ -24,6 +38,16 @@ export class CorongaApp extends App {
             public: false,
             hidden: true,
             i18nLabel: 'App Version',
+        });
+
+        configuration.settings.provideSetting({
+            id: 'app_id',
+            type: SettingType.STRING,
+            packageValue: this.getID(),
+            required: false,
+            public: false,
+            hidden: true,
+            i18nLabel: 'App Id',
         });
 
         configuration.settings.provideSetting({
@@ -50,7 +74,7 @@ export class CorongaApp extends App {
             packageValue: '',
             required: true,
             public: false,
-            i18nLabel: 'API Secret',
+            i18nLabel: 'BBB API Secret',
         });
 
         configuration.settings.provideSetting({
