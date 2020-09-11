@@ -10,6 +10,7 @@ import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
 import { SettingType } from '@rocket.chat/apps-engine/definition/settings';
 
 import { CreateVideo } from './src/commands/create';
+import { CallbackEndpoint } from './src/endpoint/CallbackEndpoint';
 import { JoinEndpoint } from './src/endpoint/JoinEndpoint';
 
 export class CorongaApp extends App {
@@ -24,6 +25,7 @@ export class CorongaApp extends App {
             security: ApiSecurity.UNSECURE,
             endpoints: [
                 new JoinEndpoint(this),
+                new CallbackEndpoint(this),
             ],
         } as IApi);
     }
